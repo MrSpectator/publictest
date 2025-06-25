@@ -10,9 +10,9 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: http://localhost:8000/api
+  - url: http://localhost:8000
     description: Local API server
-  - url: https://your-production-url/api
+  - url: https://your-production-url
     description: Production API server
 
 paths:
