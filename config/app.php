@@ -157,9 +157,10 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         // Register your module service providers here if needed
-        // App\Modules\Email\Providers\EmailServiceProvider::class,
-        // App\Modules\Logger\Providers\LoggerServiceProvider::class,
-        // App\Modules\Registration\Providers\RegistrationServiceProvider::class,
+        App\Modules\Email\Providers\EmailServiceProvider::class,
+        App\Modules\Logger\Providers\LoggerServiceProvider::class,
+        App\Modules\Registration\Providers\RegistrationServiceProvider::class,
     ],
 
 ];
+ 

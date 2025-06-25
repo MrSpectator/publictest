@@ -396,6 +396,106 @@ class LogController extends Controller
 
     /**
      * @OA\Post(
+     *     path="/api/logger/alert",
+     *     summary="Log alert message",
+     *     tags={"Logger"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"message"},
+     *             @OA\Property(property="message", type="string", example="System alert"),
+     *             @OA\Property(property="context", type="object"),
+     *             @OA\Property(property="metadata", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Alert log created successfully"
+     *     )
+     * )
+     */
+    public function alert(Request $request): JsonResponse
+    {
+        return $this->createSpecificLog($request, 'alert');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/logger/critical",
+     *     summary="Log critical message",
+     *     tags={"Logger"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"message"},
+     *             @OA\Property(property="message", type="string", example="Critical system failure"),
+     *             @OA\Property(property="context", type="object"),
+     *             @OA\Property(property="metadata", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Critical log created successfully"
+     *     )
+     * )
+     */
+    public function critical(Request $request): JsonResponse
+    {
+        return $this->createSpecificLog($request, 'critical');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/logger/notice",
+     *     summary="Log notice message",
+     *     tags={"Logger"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"message"},
+     *             @OA\Property(property="message", type="string", example="System notice"),
+     *             @OA\Property(property="context", type="object"),
+     *             @OA\Property(property="metadata", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Notice log created successfully"
+     *     )
+     * )
+     */
+    public function notice(Request $request): JsonResponse
+    {
+        return $this->createSpecificLog($request, 'notice');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/logger/debug",
+     *     summary="Log debug message",
+     *     tags={"Logger"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"message"},
+     *             @OA\Property(property="message", type="string", example="Debug information"),
+     *             @OA\Property(property="context", type="object"),
+     *             @OA\Property(property="metadata", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Debug log created successfully"
+     *     )
+     * )
+     */
+    public function debug(Request $request): JsonResponse
+    {
+        return $this->createSpecificLog($request, 'debug');
+    }
+
+    /**
+     * @OA\Post(
      *     path="/api/logger/error",
      *     summary="Log error message",
      *     tags={"Logger"},
