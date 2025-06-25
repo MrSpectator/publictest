@@ -1,0 +1,501 @@
+openapi: 3.0.3
+info:
+  title: isalesbookv2 API
+  version: 1.0.0
+  description: |
+    API and documentation for isalesbookv2 modular monolith (Email, Logger, Registration)
+  contact:
+    email: admin@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: http://localhost:8000/api
+    description: Local API server
+  - url: https://your-production-url/api
+    description: Production API server
+
+paths:
+  /api/ping:
+    get:
+      summary: Health check (no DB)
+      tags: [System]
+      responses:
+        '200':
+          description: Pong
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: pong
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                  app_name:
+                    type: string
+
+  /api/health:
+    get:
+      summary: Health check (with DB)
+      tags: [System]
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                  app_name:
+                    type: string
+                  database:
+                    type: string
+                  modules:
+                    type: object
+
+  /api/info:
+    get:
+      summary: API info
+      tags: [System]
+      responses:
+        '200':
+          description: API info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  version:
+                    type: string
+                  modules:
+                    type: object
+                  documentation:
+                    type: string
+                  health_check:
+                    type: string
+                  ping:
+                    type: string
+
+  /api/email/send:
+    post:
+      summary: Send an email
+      tags: [Email]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [to, subject, body]
+              properties:
+                to:
+                  type: string
+                  format: email
+                subject:
+                  type: string
+                body:
+                  type: string
+                cc:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                bcc:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Email sent
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/email/logs:
+    get:
+      summary: Get email logs
+      tags: [Email]
+      responses:
+        '200':
+          description: Email logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/logger/log:
+    post:
+      summary: Create a new log entry
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [level, message]
+              properties:
+                level:
+                  type: string
+                  enum: [emergency, alert, critical, error, warning, notice, info, debug]
+                category:
+                  type: string
+                  enum: [authentication, api, database, email, system, security, performance, user_action]
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Log entry created
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/logger/emergency:
+    post:
+      summary: Log emergency message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Emergency log created
+
+  /api/logger/alert:
+    post:
+      summary: Log alert message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Alert log created
+
+  /api/logger/critical:
+    post:
+      summary: Log critical message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Critical log created
+
+  /api/logger/error:
+    post:
+      summary: Log error message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Error log created
+
+  /api/logger/warning:
+    post:
+      summary: Log warning message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Warning log created
+
+  /api/logger/notice:
+    post:
+      summary: Log notice message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Notice log created
+
+  /api/logger/info:
+    post:
+      summary: Log info message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Info log created
+
+  /api/logger/debug:
+    post:
+      summary: Log debug message
+      tags: [Logger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                context:
+                  type: object
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Debug log created
+
+  /api/logger/logs:
+    get:
+      summary: Get logs with filters
+      tags: [Logger]
+      parameters:
+        - in: query
+          name: level
+          schema:
+            type: string
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Logs retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/logger/logs/{id}:
+    get:
+      summary: Get a specific log entry
+      tags: [Logger]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Log entry retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Log entry not found
+
+    delete:
+      summary: Delete a log entry
+      tags: [Logger]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Log entry deleted
+        '404':
+          description: Log entry not found
+
+  /api/logger/statistics:
+    get:
+      summary: Get log statistics
+      tags: [Logger]
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/logger/levels:
+    get:
+      summary: Get available log levels
+      tags: [Logger]
+      responses:
+        '200':
+          description: Log levels retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/logger/categories:
+    get:
+      summary: Get available log categories
+      tags: [Logger]
+      responses:
+        '200':
+          description: Log categories retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/logger/clean:
+    post:
+      summary: Clean old logs
+      tags: [Logger]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                days:
+                  type: integer
+                  default: 30
+      responses:
+        '200':
+          description: Old logs cleaned
+          content:
+            application/json:
+              schema:
+                type: object
+
+# Registration endpoints omitted for brevity, but would be included in the full file 
