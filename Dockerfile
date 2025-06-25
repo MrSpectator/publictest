@@ -25,7 +25,11 @@ COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy existing application directory contents
+# Copy composer files and install dependencies first (for better Docker caching)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader
+
+# Copy the rest of the application code
 COPY . /var/www
 
 # Copy nginx config
