@@ -1,0 +1,12 @@
+.git
+node_modules
+vendor
+storage
+.env
+.env.*
+*.log
+docker-compose.yml
+*.md
+tests
+netlify/
+public/build

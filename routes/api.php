@@ -69,6 +69,6 @@ Route::get('/info', function () {
 // Logger Module: /api/logger/*
 // Registration Module: /api/registration/*
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::get('/user', function (Request $request) {
     return $request->user();
 }); 

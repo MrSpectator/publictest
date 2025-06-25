@@ -29,11 +29,9 @@ Route::prefix('registration')->group(function () {
     Route::get('/statistics', [RegistrationController::class, 'getStatistics']);
     
     // Protected profile management endpoints
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/profile', [RegistrationController::class, 'getProfile']);
-        Route::put('/profile', [RegistrationController::class, 'updateProfile']);
-        Route::post('/change-password', [RegistrationController::class, 'changePassword']);
-    });
+    Route::get('/profile', [RegistrationController::class, 'getProfile']);
+    Route::put('/profile', [RegistrationController::class, 'updateProfile']);
+    Route::post('/change-password', [RegistrationController::class, 'changePassword']);
     
     // Admin endpoints (you can add admin middleware here)
     Route::get('/users', [RegistrationController::class, 'searchUsers']);
