@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     libssl-dev \
     libcurl4-openssl-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip openssl tokenizer xml curl \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip openssl xml curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
