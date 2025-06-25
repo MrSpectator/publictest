@@ -1,40 +1,47 @@
-# Build stage
-FROM composer:2.7 as build
+# Dockerfile for Laravel Modular Monolith
 
-WORKDIR /app
-
-# Copy composer files and install dependencies
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
-
-# Copy the rest of the app
-COPY . .
-
-# Install node dependencies and build assets (if present)
-RUN if [ -f package.json ]; then npm install && npm run build || true; fi
-
-# Runtime stage
-FROM php:8.2-cli
-
-WORKDIR /app
+FROM php:8.2-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libpng-dev libonig-dev libxml2-dev zip unzip git curl libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nginx \
+    supervisor \
+    libzip-dev \
+    libpq-dev \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Install Composer
-COPY --from=build /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
-# Copy app files
-COPY --from=build /app /app
+# Set working directory
+WORKDIR /var/www
 
-# Expose the port Render expects
-EXPOSE 10000
+# Copy existing application directory contents
+COPY . /var/www
 
-# Entrypoint: generate key, cache config, migrate, generate swagger, serve
-CMD php artisan key:generate --force && \
-    php artisan config:cache && \
-    php artisan migrate --force && \
-    php artisan l5-swagger:generate && \
-    php artisan serve --host=0.0.0.0 --port=10000 
+# Copy nginx config
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+
+# Copy PHP-FPM config
+COPY docker/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Copy Supervisor config
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy start script
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Expose port 80
+EXPOSE 80
+
+CMD ["/start.sh"]
