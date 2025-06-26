@@ -28,12 +28,16 @@ class EmailService
             }
         }
 
+        // Prepare cc and bcc fields
+        $cc = $this->prepareRecipients($emailData['cc'] ?? null);
+        $bcc = $this->prepareRecipients($emailData['bcc'] ?? null);
+
         // Create email log entry
         $emailLog = EmailLog::create([
             'from_email' => $emailData['from'] ?? config('mail.from.address'),
             'to_email' => $emailData['to'],
-            'cc' => $emailData['cc'] ?? [],
-            'bcc' => $emailData['bcc'] ?? [],
+            'cc' => $cc,
+            'bcc' => $bcc,
             'subject' => $emailData['subject'],
             'body' => $emailData['body'],
             'status' => 'pending',
@@ -43,23 +47,29 @@ class EmailService
 
         try {
             // Send email using Laravel's Mail facade
-            Mail::send([], [], function ($message) use ($emailData, $attachments) {
+            Mail::send([], [], function ($message) use ($emailData, $attachments, $cc, $bcc) {
                 $message->to($emailData['to'])
                     ->subject($emailData['subject'])
-                    ->setBody($emailData['body'], 'text/html');
+                    ->html($emailData['body']);
 
-                if (!empty($emailData['cc'])) {
-                    $message->cc($emailData['cc']);
+                if (!empty($cc)) {
+                    $message->cc($cc);
                 }
 
-                if (!empty($emailData['bcc'])) {
-                    $message->bcc($emailData['bcc']);
+                if (!empty($bcc)) {
+                    $message->bcc($bcc);
                 }
 
                 // Attach files
-                foreach ($attachments as $fileUrl) {
-                    $filePath = Storage::disk('public')->path(str_replace('/storage/', '', parse_url($fileUrl, PHP_URL_PATH)));
-                    $message->attach($filePath);
+                if (!empty($attachments)) {
+                    foreach ($attachments as $fileUrl) {
+                        // Get the relative path from the URL
+                        $relativePath = str_replace(Storage::disk('public')->url(''), '', $fileUrl);
+                        $filePath = Storage::disk('public')->path($relativePath);
+                        if (file_exists($filePath)) {
+                            $message->attach($filePath);
+                        }
+                    }
                 }
             });
 
@@ -93,6 +103,26 @@ class EmailService
         }
 
         return $emailLog->fresh();
+    }
+
+    /**
+     * Prepare recipients by converting string to array if necessary
+     *
+     * @param string|array|null $recipients
+     * @return array
+     */
+    private function prepareRecipients($recipients): array
+    {
+        if (is_string($recipients)) {
+            // Split by comma and trim whitespace
+            return array_filter(array_map('trim', explode(',', $recipients)));
+        }
+        
+        if (is_array($recipients)) {
+            return $recipients;
+        }
+
+        return [];
     }
 
     /**
@@ -143,7 +173,7 @@ class EmailService
                 Mail::send([], [], function ($message) use ($emailLog) {
                     $message->to($emailLog->to_email)
                         ->subject($emailLog->subject)
-                        ->setBody($emailLog->body, 'text/html');
+                        ->html($emailLog->body);
 
                     if (!empty($emailLog->cc)) {
                         $message->cc($emailLog->cc);
@@ -156,8 +186,12 @@ class EmailService
                     // Attach files
                     if (!empty($emailLog->attachments)) {
                         foreach ($emailLog->attachments as $fileUrl) {
-                            $filePath = Storage::disk('public')->path(str_replace('/storage/', '', parse_url($fileUrl, PHP_URL_PATH)));
-                            $message->attach($filePath);
+                            // Get the relative path from the URL
+                            $relativePath = str_replace(Storage::disk('public')->url(''), '', $fileUrl);
+                            $filePath = Storage::disk('public')->path($relativePath);
+                            if (file_exists($filePath)) {
+                                $message->attach($filePath);
+                            }
                         }
                     }
                 });

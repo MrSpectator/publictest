@@ -8,8 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @OA\Schema(
  *     schema="SystemLog",
- *     title="System Log",
- *     description="System log entry model"
+ *     title="SystemLog",
+ *     description="System Log model",
+ *     @OA\Property(property="id", type="integer", readOnly="true", example="1"),
+ *     @OA\Property(property="level", type="string", example="info"),
+ *     @OA\Property(property="message", type="string", example="This is a log message."),
+ *     @OA\Property(property="context", type="object", example={"key": "value"}),
+ *     @OA\Property(property="created_at", type="string", format="date-time", readOnly="true"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", readOnly="true")
  * )
  */
 class SystemLog extends Model
@@ -128,4 +134,14 @@ class SystemLog extends Model
      * @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T12:00:00Z")
      * @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-01T12:00:00Z")
      */
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return \App\Modules\Logger\Database\Factories\SystemLogFactory::new();
+    }
 } 

@@ -14,40 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Simple health check endpoint (no database required)
-Route::get('/ping', function () {
-    return response()->json([
-        'status' => 'pong',
-        'timestamp' => now()->toISOString(),
-        'version' => '1.0.0',
-        'app_name' => 'isalesbookv2'
-    ]);
-});
-
-// Health check endpoint with database check
-Route::get('/health', function () {
-    try {
-        // Test database connection
-        \DB::connection()->getPdo();
-        $dbStatus = 'connected';
-    } catch (\Exception $e) {
-        $dbStatus = 'disconnected';
-    }
-
-    return response()->json([
-        'status' => 'healthy',
-        'timestamp' => now()->toISOString(),
-        'version' => '1.0.0',
-        'app_name' => 'isalesbookv2',
-        'database' => $dbStatus,
-        'modules' => [
-            'email' => 'active',
-            'logger' => 'active',
-            'registration' => 'active'
-        ]
-    ]);
-});
-
 // API info endpoint
 Route::get('/info', function () {
     return response()->json([
@@ -58,9 +24,7 @@ Route::get('/info', function () {
             'logger' => '/api/logger/*',
             'registration' => '/api/registration/*'
         ],
-        'documentation' => '/api/documentation',
-        'health_check' => '/api/health',
-        'ping' => '/api/ping'
+        'documentation' => '/api/documentation'
     ]);
 });
 

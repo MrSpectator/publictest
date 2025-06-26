@@ -3,6 +3,9 @@
 namespace App\Modules\Registration\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Modules\Registration\Services\RegistrationService;
+use App\Modules\Email\Services\EmailService;
+use Illuminate\Http\Request;
 
 class RegistrationServiceProvider extends ServiceProvider
 {
@@ -11,9 +14,12 @@ class RegistrationServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register the RegistrationService as a singleton
-        $this->app->singleton(\App\Modules\Registration\Services\RegistrationService::class, function ($app) {
-            return new \App\Modules\Registration\Services\RegistrationService();
+        // Register the RegistrationService with its dependencies resolved from the container
+        $this->app->singleton(RegistrationService::class, function ($app) {
+            return new RegistrationService(
+                $app->make(Request::class),
+                $app->make(EmailService::class)
+            );
         });
     }
 

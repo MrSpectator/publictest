@@ -22,8 +22,8 @@ class EmailController extends Controller
             'to' => 'required|email',
             'subject' => 'required|string',
             'body' => 'required|string',
-            'cc' => 'array',
-            'bcc' => 'array',
+            'cc' => 'nullable|string',
+            'bcc' => 'nullable|string',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,txt|max:10240',
         ]);
         $data = $validated;

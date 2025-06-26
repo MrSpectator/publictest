@@ -2,20 +2,25 @@
 
 namespace App\Modules\Registration\Services;
 
+use App\Modules\Email\Services\EmailService;
 use App\Modules\Registration\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class RegistrationService
 {
-    protected $request;
+    protected Request $request;
+    protected EmailService $emailService;
 
-    public function __construct(Request $request = null)
+    public function __construct(Request $request, EmailService $emailService)
     {
-        $this->request = $request ?? request();
+        $this->request = $request;
+        $this->emailService = $emailService;
     }
 
     /**
@@ -121,7 +126,7 @@ class RegistrationService
     public function changePassword(User $user, string $currentPassword, string $newPassword): bool
     {
         if (!Hash::check($currentPassword, $user->password)) {
-            throw new ValidationException(Validator::make([], []), 'Current password is incorrect');
+            throw ValidationException::withMessages(['current_password' => 'Current password is incorrect']);
         }
 
         $user->update(['password' => Hash::make($newPassword)]);
@@ -134,15 +139,23 @@ class RegistrationService
      */
     public function sendVerificationEmail(User $user): void
     {
-        // Generate verification token
         $token = Str::random(64);
-        
-        // Store token in cache for 24 hours
-        cache()->put("email_verification_{$user->id}", $token, now()->addHours(24));
+        Cache::put("email_verification_{$token}", $user->id, now()->addHours(24));
 
-        // Send email (you can implement your email service here)
-        // For now, we'll just log it
-        \Log::info("Verification email sent to {$user->email} with token: {$token}");
+        $verificationUrl = config('app.frontend_url') . '/verify-email?token=' . $token;
+
+        $subject = 'Verify Your Email Address';
+        $body = "<p>Please click the button below to verify your email address.</p>"
+              . "<a href='{$verificationUrl}' style='padding:10px;background-color:#21dc65;color:white;text-decoration:none;'>Verify Email</a><br><br>"
+              . "<p>If you did not create an account, no further action is required.</p>";
+
+        $this->emailService->sendEmail([
+            'to' => $user->email,
+            'subject' => $subject,
+            'body' => $body,
+        ]);
+
+        Log::info("Verification email sent to {$user->email}.");
     }
 
     /**
@@ -186,10 +199,23 @@ class RegistrationService
         }
 
         $token = Str::random(64);
-        cache()->put("password_reset_{$user->id}", $token, now()->addHours(1));
+        Cache::put("password_reset_{$token}", $user->id, now()->addHours(1));
 
-        // Send email (you can implement your email service here)
-        \Log::info("Password reset email sent to {$email} with token: {$token}");
+        $resetUrl = config('app.frontend_url') . '/reset-password?token=' . $token;
+        
+        $subject = 'Reset Your Password';
+        $body = "<p>You are receiving this email because we received a password reset request for your account.</p>"
+              . "<a href='{$resetUrl}' style='padding:10px;background-color:#21dc65;color:white;text-decoration:none;'>Reset Password</a><br><br>"
+              . "<p>This password reset link will expire in 60 minutes.</p>"
+              . "<p>If you did not request a password reset, no further action is required.</p>";
+        
+        $this->emailService->sendEmail([
+            'to' => $user->email,
+            'subject' => $subject,
+            'body' => $body,
+        ]);
+
+        Log::info("Password reset email sent to {$email}.");
 
         return true;
     }

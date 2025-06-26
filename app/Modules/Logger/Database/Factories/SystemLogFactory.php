@@ -11,31 +11,10 @@ class SystemLogFactory extends Factory
 
     public function definition(): array
     {
-        $levels = SystemLog::getLevels();
-        $categories = SystemLog::getCategories();
-        
         return [
-            'level' => $this->faker->randomElement($levels),
-            'category' => $this->faker->randomElement($categories),
-            'message' => $this->faker->sentence(),
-            'context' => [
-                'user_id' => $this->faker->numberBetween(1, 100),
-                'action' => $this->faker->randomElement(['login', 'logout', 'create', 'update', 'delete', 'view']),
-                'resource' => $this->faker->randomElement(['user', 'post', 'comment', 'file', 'email']),
-                'timestamp' => $this->faker->dateTimeThisYear()->format('Y-m-d H:i:s')
-            ],
-            'user_id' => $this->faker->optional()->numberBetween(1, 100),
-            'ip_address' => $this->faker->ipv4(),
-            'user_agent' => $this->faker->userAgent(),
-            'request_id' => $this->faker->uuid(),
-            'execution_time' => $this->faker->randomFloat(4, 0.001, 5.0),
-            'memory_usage' => $this->faker->numberBetween(1024, 1048576),
-            'metadata' => [
-                'session_id' => $this->faker->uuid(),
-                'browser' => $this->faker->randomElement(['Chrome', 'Firefox', 'Safari', 'Edge']),
-                'os' => $this->faker->randomElement(['Windows', 'macOS', 'Linux', 'iOS', 'Android']),
-                'referrer' => $this->faker->optional()->url()
-            ]
+            'level' => $this->faker->randomElement(['info', 'warning', 'error', 'debug']),
+            'message' => $this->faker->sentence,
+            'context' => ['user_id' => $this->faker->randomNumber()],
         ];
     }
 
