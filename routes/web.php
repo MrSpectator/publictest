@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,10 +16,19 @@ use Illuminate\Support\Facades\Route;
 
 // Redirect landing page to Swagger UI
 Route::get('/', function () {
-    return redirect('/api/documentation');
+    return redirect('/login');
 });
 
-// Also redirect /api to Swagger UI for convenience
-Route::get('/api', function () {
-    return redirect('/api/documentation');
+// Authentication routes
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('auth.login');
+
+Route::get('/forgot-password', function () {
+    return view('auth.forgot-password');
+})->name('auth.forgot-password');
+
+// Redirect to Swagger UI for API documentation
+Route::get('/api-docs', function () {
+    return redirect('/swagger');
 });

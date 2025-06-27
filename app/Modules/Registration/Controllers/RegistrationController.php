@@ -28,22 +28,26 @@ class RegistrationController extends Controller
     /**
      * @OA\Post(
      *     path="/api/registration/register",
-     *     summary="Register a new user",
+     *     summary="Register a new user (Individual or Company)",
      *     tags={"Registration"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "email", "password", "password_confirmation", "accept_terms", "accept_privacy"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *             required={"email", "password", "password_confirmation", "type"},
+     *             @OA\Property(property="type", type="integer", example=1, description="1=Individual, 2=Company"),
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
      *             @OA\Property(property="password", type="string", minLength=8, example="password123"),
      *             @OA\Property(property="password_confirmation", type="string", example="password123"),
-     *             @OA\Property(property="username", type="string", example="johndoe"),
-     *             @OA\Property(property="phone", type="string", example="+1234567890"),
-     *             @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
-     *             @OA\Property(property="gender", type="string", enum={"male", "female", "other", "prefer_not_to_say"}),
-     *             @OA\Property(property="accept_terms", type="boolean", example=true),
-     *             @OA\Property(property="accept_privacy", type="boolean", example=true)
+     *             @OA\Property(property="first_name", type="string", example="John", description="Required for Individual (type=1)"),
+     *             @OA\Property(property="last_name", type="string", example="Doe", description="Required for Individual (type=1)"),
+     *             @OA\Property(property="phone_number", type="string", example="+1234567890", description="Required for Individual (type=1)"),
+     *             @OA\Property(property="company_name", type="string", example="My Company", description="Required for both types"),
+     *             @OA\Property(property="company_contact_person", type="string", example="Jane Smith", description="Required for Company (type=2)"),
+     *             @OA\Property(property="company_contact_number", type="string", example="+1234567890", description="Required for Company (type=2)"),
+     *             @OA\Property(property="company_url", type="string", example="https://example.com", description="Required for both types"),
+     *             @OA\Property(property="company_address", type="string", example="123 Main St", description="Required for both types"),
+     *             @OA\Property(property="country_id", type="integer", example=159, description="Required for both types"),
+     *             @OA\Property(property="state_id", type="integer", example=285, description="Required for both types")
      *         )
      *     ),
      *     @OA\Response(
@@ -69,7 +73,13 @@ class RegistrationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'User registered successfully. Please check your email for verification.',
-                'data' => $user->only(['id', 'name', 'email', 'username', 'created_at'])
+                'data' => [
+                    'user' => $user->only(['id', 'email', 'type', 'created_at']),
+                    'organization' => [
+                        'name' => $user->organization->name,
+                        'code' => $user->organization->code
+                    ]
+                ]
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -141,7 +151,7 @@ class RegistrationController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"email"},
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com")
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
      *         )
      *     ),
      *     @OA\Response(
@@ -153,8 +163,8 @@ class RegistrationController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="User not found"
+     *         response=400,
+     *         description="User not found or already verified"
      *     )
      * )
      */
@@ -164,28 +174,19 @@ class RegistrationController extends Controller
             'email' => 'required|email'
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $sent = $this->registrationService->resendVerification($request->email);
 
-        if (!$user) {
+        if ($sent) {
             return response()->json([
-                'success' => false,
-                'message' => 'User not found'
-            ], 404);
+                'success' => true,
+                'message' => 'Verification email sent successfully'
+            ]);
         }
-
-        if ($user->isVerified()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email is already verified'
-            ], 400);
-        }
-
-        $this->registrationService->sendVerificationEmail($user);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Verification email sent'
-        ]);
+            'success' => false,
+            'message' => 'User not found or already verified'
+        ], 400);
     }
 
     /**
@@ -197,7 +198,7 @@ class RegistrationController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"email"},
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com")
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
      *         )
      *     ),
      *     @OA\Response(
@@ -287,10 +288,6 @@ class RegistrationController extends Controller
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="data", type="object")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
      *     )
      * )
      */
@@ -313,16 +310,16 @@ class RegistrationController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="username", type="string", example="johndoe"),
-     *             @OA\Property(property="phone", type="string", example="+1234567890"),
-     *             @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
-     *             @OA\Property(property="gender", type="string", enum={"male", "female", "other", "prefer_not_to_say"}),
-     *             @OA\Property(property="bio", type="string", example="Software developer"),
-     *             @OA\Property(property="website", type="string", format="url", example="https://example.com"),
-     *             @OA\Property(property="location", type="string", example="New York, USA"),
-     *             @OA\Property(property="timezone", type="string", example="America/New_York"),
-     *             @OA\Property(property="language", type="string", example="en")
+     *             @OA\Property(property="first_name", type="string", example="John"),
+     *             @OA\Property(property="last_name", type="string", example="Doe"),
+     *             @OA\Property(property="phone_number", type="string", example="+1234567890"),
+     *             @OA\Property(property="company_name", type="string", example="My Company"),
+     *             @OA\Property(property="company_contact_person", type="string", example="Jane Smith"),
+     *             @OA\Property(property="company_contact_number", type="string", example="+1234567890"),
+     *             @OA\Property(property="company_url", type="string", example="https://example.com"),
+     *             @OA\Property(property="company_address", type="string", example="123 Main St"),
+     *             @OA\Property(property="country_id", type="integer", example=159),
+     *             @OA\Property(property="state_id", type="integer", example=285)
      *         )
      *     ),
      *     @OA\Response(
@@ -417,7 +414,7 @@ class RegistrationController extends Controller
     /**
      * @OA\Get(
      *     path="/api/registration/check-availability",
-     *     summary="Check if email/username/phone is available",
+     *     summary="Check if email/phone/company name is available",
      *     tags={"Registration"},
      *     @OA\Parameter(
      *         name="email",
@@ -427,16 +424,16 @@ class RegistrationController extends Controller
      *         @OA\Schema(type="string", format="email")
      *     ),
      *     @OA\Parameter(
-     *         name="username",
+     *         name="phone",
      *         in="query",
-     *         description="Check username availability",
+     *         description="Check phone availability",
      *         required=false,
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="phone",
+     *         name="company_name",
      *         in="query",
-     *         description="Check phone availability",
+     *         description="Check company name availability",
      *         required=false,
      *         @OA\Schema(type="string")
      *     ),
@@ -458,12 +455,12 @@ class RegistrationController extends Controller
             $results['email'] = $this->registrationService->isEmailAvailable($request->email);
         }
 
-        if ($request->has('username')) {
-            $results['username'] = $this->registrationService->isUsernameAvailable($request->username);
-        }
-
         if ($request->has('phone')) {
             $results['phone'] = $this->registrationService->isPhoneAvailable($request->phone);
+        }
+
+        if ($request->has('company_name')) {
+            $results['company_name'] = $this->registrationService->isCompanyNameAvailable($request->company_name);
         }
 
         return response()->json([
@@ -500,33 +497,40 @@ class RegistrationController extends Controller
     /**
      * @OA\Get(
      *     path="/api/registration/users",
-     *     summary="Search users (Admin only)",
+     *     summary="Search users with filters",
      *     tags={"Registration"},
      *     @OA\Parameter(
      *         name="search",
      *         in="query",
-     *         description="Search term",
+     *         description="Search by name, email, or company name",
      *         required=false,
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         description="Filter by user type (1=Individual, 2=Company)",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
      *         name="status",
      *         in="query",
-     *         description="Filter by status",
+     *         description="Filter by status (active/inactive)",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"active", "inactive"})
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
      *         name="verified",
      *         in="query",
-     *         description="Filter by verification status",
+     *         description="Filter by verification status (yes/no)",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"yes", "no"})
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
-     *         description="Number of users per page",
+     *         description="Number of results per page",
      *         required=false,
      *         @OA\Schema(type="integer", default=20)
      *     ),
@@ -542,8 +546,11 @@ class RegistrationController extends Controller
      */
     public function searchUsers(Request $request): JsonResponse
     {
-        $filters = $request->only(['search', 'status', 'verified', 'source', 'start_date', 'end_date', 'per_page']);
-        
+        $filters = $request->only([
+            'search', 'type', 'status', 'verified', 'source', 
+            'start_date', 'end_date', 'per_page'
+        ]);
+
         $users = $this->registrationService->searchUsers($filters);
 
         return response()->json([
@@ -554,24 +561,24 @@ class RegistrationController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/registration/genders",
-     *     summary="Get available genders",
+     *     path="/api/registration/types",
+     *     summary="Get available user types",
      *     tags={"Registration"},
      *     @OA\Response(
      *         response=200,
-     *         description="Genders retrieved successfully",
+     *         description="User types retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="string"))
+     *             @OA\Property(property="data", type="object")
      *         )
      *     )
      * )
      */
-    public function getGenders(): JsonResponse
+    public function getUserTypes(): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'data' => User::getGenders()
+            'data' => User::getUserTypes()
         ]);
     }
 

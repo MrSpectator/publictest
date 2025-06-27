@@ -23,5 +23,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->register(\App\Modules\Email\Providers\EmailServiceProvider::class);
         $this->app->register(\App\Modules\Logger\Providers\LoggerServiceProvider::class);
         $this->app->register(\App\Modules\Registration\Providers\RegistrationServiceProvider::class);
+        $this->app->register(\App\Modules\Auth\Providers\AuthServiceProvider::class);
     }
 }

@@ -13,19 +13,20 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
-        'username',
-        'phone',
-        'date_of_birth',
-        'gender',
-        'profile_picture',
-        'bio',
-        'website',
-        'location',
-        'timezone',
-        'language',
+        'phone_number',
+        'company_name',
+        'company_contact_person',
+        'company_contact_number',
+        'company_url',
+        'company_address',
+        'country_id',
+        'state_id',
+        'type', // 1 = individual, 2 = company
+        'organization_id', // Link to organization
         'is_active',
         'email_verified_at',
         'phone_verified_at',
@@ -46,8 +47,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
         'last_login_at' => 'datetime',
-        'date_of_birth' => 'date',
         'is_active' => 'boolean',
+        'type' => 'integer',
+        'country_id' => 'integer',
+        'state_id' => 'integer',
+        'organization_id' => 'integer',
         'preferences' => 'array',
         'metadata' => 'array',
         'created_at' => 'datetime',
@@ -55,11 +59,9 @@ class User extends Authenticatable
         'deleted_at' => 'datetime'
     ];
 
-    // Gender options
-    const GENDER_MALE = 'male';
-    const GENDER_FEMALE = 'female';
-    const GENDER_OTHER = 'other';
-    const GENDER_PREFER_NOT_TO_SAY = 'prefer_not_to_say';
+    // User types
+    const TYPE_INDIVIDUAL = 1;
+    const TYPE_COMPANY = 2;
 
     // Registration sources
     const SOURCE_WEB = 'web';
@@ -68,13 +70,11 @@ class User extends Authenticatable
     const SOURCE_SOCIAL = 'social';
     const SOURCE_INVITE = 'invite';
 
-    public static function getGenders()
+    public static function getUserTypes()
     {
         return [
-            self::GENDER_MALE,
-            self::GENDER_FEMALE,
-            self::GENDER_OTHER,
-            self::GENDER_PREFER_NOT_TO_SAY
+            self::TYPE_INDIVIDUAL => 'Individual',
+            self::TYPE_COMPANY => 'Company'
         ];
     }
 
@@ -114,31 +114,79 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is individual
+     */
+    public function isIndividual(): bool
+    {
+        return $this->type === self::TYPE_INDIVIDUAL;
+    }
+
+    /**
+     * Check if user is company
+     */
+    public function isCompany(): bool
+    {
+        return $this->type === self::TYPE_COMPANY;
+    }
+
+    /**
      * Get user's full name
      */
     public function getFullNameAttribute(): string
     {
-        return $this->name;
+        if ($this->isIndividual()) {
+            return trim($this->first_name . ' ' . $this->last_name);
+        }
+        return $this->company_name;
     }
 
     /**
-     * Get user's display name (username or name)
+     * Get user's display name
      */
     public function getDisplayNameAttribute(): string
     {
-        return $this->username ?: $this->name;
+        if ($this->isIndividual()) {
+            return $this->getFullNameAttribute();
+        }
+        return $this->company_name;
     }
 
     /**
-     * Get user's age
+     * Get contact person name (for companies)
      */
-    public function getAgeAttribute(): ?int
+    public function getContactPersonAttribute(): ?string
     {
-        if (!$this->date_of_birth) {
-            return null;
+        if ($this->isCompany()) {
+            return $this->company_contact_person;
         }
-        
-        return $this->date_of_birth->age;
+        return $this->getFullNameAttribute();
+    }
+
+    /**
+     * Get contact number
+     */
+    public function getContactNumberAttribute(): ?string
+    {
+        if ($this->isCompany()) {
+            return $this->company_contact_number;
+        }
+        return $this->phone_number;
+    }
+
+    /**
+     * Scope for individual users
+     */
+    public function scopeIndividual($query)
+    {
+        return $query->where('type', self::TYPE_INDIVIDUAL);
+    }
+
+    /**
+     * Scope for company users
+     */
+    public function scopeCompany($query)
+    {
+        return $query->where('type', self::TYPE_COMPANY);
     }
 
     /**
@@ -190,14 +238,16 @@ class User extends Authenticatable
     }
 
     /**
-     * Search users by name, email, or username
+     * Search users by name, email, or company name
      */
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
+            $q->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%")
               ->orWhere('email', 'like', "%{$search}%")
-              ->orWhere('username', 'like', "%{$search}%");
+              ->orWhere('company_name', 'like', "%{$search}%")
+              ->orWhere('company_contact_person', 'like', "%{$search}%");
         });
     }
 
@@ -249,10 +299,17 @@ class User extends Authenticatable
      */
     public function getProfileCompletionPercentage(): int
     {
-        $fields = [
-            'name', 'email', 'username', 'phone', 'date_of_birth',
-            'gender', 'profile_picture', 'bio', 'website', 'location'
-        ];
+        if ($this->isIndividual()) {
+            $fields = [
+                'first_name', 'last_name', 'email', 'phone_number',
+                'company_address', 'company_url', 'country_id', 'state_id'
+            ];
+        } else {
+            $fields = [
+                'company_name', 'company_contact_person', 'company_contact_number',
+                'email', 'company_address', 'company_url', 'country_id', 'state_id'
+            ];
+        }
 
         $completed = 0;
         foreach ($fields as $field) {
@@ -270,5 +327,21 @@ class User extends Authenticatable
     public function isProfileComplete(): bool
     {
         return $this->getProfileCompletionPercentage() >= 80;
+    }
+
+    /**
+     * Get user's organization
+     */
+    public function organization()
+    {
+        return $this->belongsTo(\App\Models\Organization::class);
+    }
+
+    /**
+     * Get user's organization code
+     */
+    public function getOrganizationCodeAttribute(): ?string
+    {
+        return $this->organization?->code;
     }
 } 

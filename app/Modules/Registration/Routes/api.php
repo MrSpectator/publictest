@@ -24,14 +24,16 @@ Route::prefix('api')->group(function () {
         
         // Public utility endpoints
         Route::get('/check-availability', [RegistrationController::class, 'checkAvailability']);
-        Route::get('/genders', [RegistrationController::class, 'getGenders']);
+        Route::get('/types', [RegistrationController::class, 'getUserTypes']);
         Route::get('/sources', [RegistrationController::class, 'getSources']);
         Route::get('/statistics', [RegistrationController::class, 'getStatistics']);
         
         // Protected profile management endpoints
-        Route::get('/profile', [RegistrationController::class, 'getProfile']);
-        Route::put('/profile', [RegistrationController::class, 'updateProfile']);
-        Route::post('/change-password', [RegistrationController::class, 'changePassword']);
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::get('/profile', [RegistrationController::class, 'getProfile']);
+            Route::put('/profile', [RegistrationController::class, 'updateProfile']);
+            Route::post('/change-password', [RegistrationController::class, 'changePassword']);
+        });
         
         // Admin endpoints (you can add admin middleware here)
         Route::get('/users', [RegistrationController::class, 'searchUsers']);
