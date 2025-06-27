@@ -32,34 +32,32 @@ class RegistrationService
     {
         $type = $data['type'] ?? User::TYPE_INDIVIDUAL;
         
-        if ($type === User::TYPE_INDIVIDUAL) {
-            $validator = Validator::make($data, [
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'phone_number' => 'required|string|max:20',
-                'company_address' => 'nullable|string|max:500',
-                'company_url' => 'nullable|string|max:255',
-                'country_id' => 'nullable|integer',
-                'state_id' => 'nullable|integer',
-                'company_name' => 'nullable|string|max:255',
-                'password' => 'required|string|min:8|confirmed',
-                'type' => 'required|integer|in:1,2'
-            ]);
-        } else {
-            $validator = Validator::make($data, [
-                'company_name' => 'required|string|max:255',
-                'company_contact_person' => 'required|string|max:255',
-                'company_contact_number' => 'required|string|max:20',
-                'email' => 'required|string|email|max:255|unique:users',
-                'company_address' => 'required|string|max:500',
-                'company_url' => 'required|string|max:255',
-                'country_id' => 'required|integer',
-                'state_id' => 'required|integer',
-                'password' => 'required|string|min:8|confirmed',
-                'type' => 'required|integer|in:1,2'
-            ]);
-        }
+        $validator = Validator::make($data, [
+            // Individual fields (required only if type is 1)
+            'first_name' => 'required_if:type,1|string|max:255',
+            'last_name' => 'required_if:type,1|string|max:255',
+            'phone_number' => 'required_if:type,1|string|max:20',
+            'company_address' => 'required_if:type,1|string|max:500',
+            'company_url' => 'required_if:type,1|string|max:255',
+            'country_id' => 'required_if:type,1|integer',
+            'state_id' => 'required_if:type,1|integer',
+            'company_name' => 'required_if:type,1|string|max:255',
+
+            // Company fields (required only if type is 2)
+            'company_name' => 'required_if:type,2|string|max:255',
+            'company_contact_person' => 'required_if:type,2|string|max:255',
+            'company_contact_number' => 'required_if:type,2|string|max:20',
+            'company_address' => 'required_if:type,2|string|max:500',
+            'company_url' => 'required_if:type,2|string|max:255',
+            'country_id' => 'required_if:type,2|integer',
+            'state_id' => 'required_if:type,2|integer',
+
+            // Shared fields (required for both, but only if type matches)
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'password_confirmation' => 'required|string',
+            'type' => 'required|integer|in:1,2',
+        ]);
 
         if ($validator->fails()) {
             throw new ValidationException($validator);

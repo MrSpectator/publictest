@@ -12,7 +12,7 @@ info:
 servers:
   - url: http://localhost:8000
     description: Local API server
-  - url: https://your-production-url
+  - url: http://backend-v2.isalesbook.com
     description: Production API server
 
 paths:
@@ -503,33 +503,90 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [name, email, password, password_confirmation, accept_terms, accept_privacy]
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  minLength: 8
-                password_confirmation:
-                  type: string
-                username:
-                  type: string
-                phone:
-                  type: string
-                date_of_birth:
-                  type: string
-                  format: date
-                gender:
-                  type: string
-                  enum: [male, female, other, prefer_not_to_say]
-                accept_terms:
-                  type: boolean
-                accept_privacy:
-                  type: boolean
+              oneOf:
+                - title: Individual Registration
+                  type: object
+                  required:
+                    - first_name
+                    - last_name
+                    - email
+                    - phone_number
+                    - company_address
+                    - company_url
+                    - country_id
+                    - state_id
+                    - company_name
+                    - password
+                    - password_confirmation
+                    - type
+                  properties:
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+                    phone_number:
+                      type: string
+                    company_address:
+                      type: string
+                    company_url:
+                      type: string
+                    country_id:
+                      type: integer
+                    state_id:
+                      type: integer
+                    company_name:
+                      type: string
+                    password:
+                      type: string
+                      minLength: 8
+                    password_confirmation:
+                      type: string
+                    type:
+                      type: integer
+                      enum: [1]
+                - title: Company Registration
+                  type: object
+                  required:
+                    - company_name
+                    - company_contact_person
+                    - company_contact_number
+                    - email
+                    - company_address
+                    - company_url
+                    - country_id
+                    - state_id
+                    - password
+                    - password_confirmation
+                    - type
+                  properties:
+                    company_name:
+                      type: string
+                    company_contact_person:
+                      type: string
+                    company_contact_number:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+                    company_address:
+                      type: string
+                    company_url:
+                      type: string
+                    country_id:
+                      type: integer
+                    state_id:
+                      type: integer
+                    password:
+                      type: string
+                      minLength: 8
+                    password_confirmation:
+                      type: string
+                    type:
+                      type: integer
+                      enum: [2]
       responses:
         '201':
           description: User registered
