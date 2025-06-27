@@ -38,16 +38,16 @@ class RegistrationController extends Controller
      *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
      *             @OA\Property(property="password", type="string", minLength=8, example="password123"),
      *             @OA\Property(property="password_confirmation", type="string", example="password123"),
-     *             @OA\Property(property="first_name", type="string", example="John", description="Required for Individual (type=1)"),
-     *             @OA\Property(property="last_name", type="string", example="Doe", description="Required for Individual (type=1)"),
-     *             @OA\Property(property="phone_number", type="string", example="+1234567890", description="Required for Individual (type=1)"),
-     *             @OA\Property(property="company_name", type="string", example="My Company", description="Required for both types"),
-     *             @OA\Property(property="company_contact_person", type="string", example="Jane Smith", description="Required for Company (type=2)"),
-     *             @OA\Property(property="company_contact_number", type="string", example="+1234567890", description="Required for Company (type=2)"),
-     *             @OA\Property(property="company_url", type="string", example="https://example.com", description="Required for both types"),
-     *             @OA\Property(property="company_address", type="string", example="123 Main St", description="Required for both types"),
-     *             @OA\Property(property="country_id", type="integer", example=159, description="Required for both types"),
-     *             @OA\Property(property="state_id", type="integer", example=285, description="Required for both types")
+     *             @OA\Property(property="first_name", type="string", example="Jane"),
+     *             @OA\Property(property="last_name", type="string", example="Doe"),
+     *             @OA\Property(property="phone_number", type="string", example="08012345678"),
+     *             @OA\Property(property="company_address", type="string", example="123 Main St"),
+     *             @OA\Property(property="company_url", type="string", example="https://company.com"),
+     *             @OA\Property(property="country_id", type="integer", example=1),
+     *             @OA\Property(property="state_id", type="integer", example=10),
+     *             @OA\Property(property="company_name", type="string", example="Acme Inc."),
+     *             @OA\Property(property="company_contact_person", type="string", example="John Manager"),
+     *             @OA\Property(property="company_contact_number", type="string", example="09098765432")
      *         )
      *     ),
      *     @OA\Response(
