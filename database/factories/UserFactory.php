@@ -23,13 +23,32 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        return [
-            'name' => fake()->name(),
+        $type = fake()->randomElement([1, 2]);
+        $base = [
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'company_name' => fake()->company(),
+            'company_address' => fake()->address(),
+            'company_url' => fake()->url(),
+            'country_id' => fake()->numberBetween(1, 200),
+            'state_id' => fake()->numberBetween(1, 5000),
+            'type' => $type,
         ];
+        if ($type === 1) {
+            // Individual: fill both personal and company fields
+            return array_merge($base, [
+                'first_name' => fake()->firstName(),
+                'last_name' => fake()->lastName(),
+                'phone_number' => fake()->phoneNumber(),
+            ]);
+        } else {
+            // Company: only company fields, personal fields null
+            return array_merge($base, [
+                'first_name' => null,
+                'last_name' => null,
+                'phone_number' => null,
+            ]);
+        }
     }
 
     /**
@@ -39,6 +58,36 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function individual(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 1,
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
+            'phone_number' => fake()->phoneNumber(),
+            'company_name' => fake()->company(),
+            'company_address' => fake()->address(),
+            'company_url' => fake()->url(),
+            'country_id' => fake()->numberBetween(1, 200),
+            'state_id' => fake()->numberBetween(1, 5000),
+        ]);
+    }
+
+    public function company(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 2,
+            'first_name' => null,
+            'last_name' => null,
+            'phone_number' => null,
+            'company_name' => fake()->company(),
+            'company_address' => fake()->address(),
+            'company_url' => fake()->url(),
+            'country_id' => fake()->numberBetween(1, 200),
+            'state_id' => fake()->numberBetween(1, 5000),
         ]);
     }
 }
