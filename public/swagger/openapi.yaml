@@ -101,46 +101,162 @@ paths:
                 to:
                   type: string
                   format: email
+                  example: "recipient@example.com"
                 subject:
                   type: string
+                  example: "Test Email Subject"
                 body:
                   type: string
+                  example: "This is the email body content"
                 cc:
-                  type: array
-                  items:
-                    type: string
-                    format: email
+                  type: string
+                  example: "cc1@example.com,cc2@example.com"
+                  description: "Comma-separated email addresses"
                 bcc:
-                  type: array
-                  items:
-                    type: string
-                    format: email
+                  type: string
+                  example: "bcc1@example.com,bcc2@example.com"
+                  description: "Comma-separated email addresses"
                 attachments:
                   type: array
                   items:
                     type: string
                     format: binary
+                  description: "Email attachments (jpg, jpeg, png, pdf, doc, docx, txt, max 10MB each)"
       responses:
         '200':
-          description: Email sent
+          description: Email sent successfully
           content:
             application/json:
               schema:
                 type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  from_email:
+                    type: string
+                    example: "sender@example.com"
+                  to_email:
+                    type: string
+                    example: "recipient@example.com"
+                  subject:
+                    type: string
+                    example: "Test Email Subject"
+                  status:
+                    type: string
+                    enum: [pending, sent, failed]
+                    example: "sent"
+                  attempts:
+                    type: integer
+                    example: 1
+                  sent_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  error_message:
+                    type: string
+                    nullable: true
+                  created_at:
+                    type: string
+                    format: date-time
+        '422':
+          description: Validation error
+        '500':
+          description: Email sending failed
 
   /api/email/logs:
     get:
       summary: Get email logs
       tags: [Email]
+      parameters:
+        - name: status
+          in: query
+          description: Filter by status
+          required: false
+          schema:
+            type: string
+            enum: [pending, sent, failed]
+        - name: to_email
+          in: query
+          description: Filter by recipient email
+          required: false
+          schema:
+            type: string
+            format: email
+        - name: from_date
+          in: query
+          description: Filter by start date
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          description: Filter by end date
+          required: false
+          schema:
+            type: string
+            format: date
       responses:
         '200':
-          description: Email logs
+          description: Email logs retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
                   type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    from_email:
+                      type: string
+                      example: "sender@example.com"
+                    to_email:
+                      type: string
+                      example: "recipient@example.com"
+                    cc:
+                      type: array
+                      items:
+                        type: string
+                      nullable: true
+                    bcc:
+                      type: array
+                      items:
+                        type: string
+                      nullable: true
+                    subject:
+                      type: string
+                      example: "Test Email Subject"
+                    body:
+                      type: string
+                      example: "This is the email body content"
+                    status:
+                      type: string
+                      enum: [pending, sent, failed]
+                      example: "sent"
+                    attempts:
+                      type: integer
+                      example: 1
+                    sent_at:
+                      type: string
+                      format: date-time
+                      nullable: true
+                    error_message:
+                      type: string
+                      nullable: true
+                    attachments:
+                      type: array
+                      items:
+                        type: string
+                      nullable: true
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
 
   /api/logger/log:
     post:

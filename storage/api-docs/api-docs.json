@@ -276,6 +276,216 @@
                 ]
             }
         },
+        "/api/email/send": {
+            "post": {
+                "tags": [
+                    "Email"
+                ],
+                "summary": "Send an email",
+                "operationId": "ba77162c2f5ce0243aa1c332e6c9bd8a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "to",
+                                    "subject",
+                                    "body"
+                                ],
+                                "properties": {
+                                    "to": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "recipient@example.com"
+                                    },
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "Test Email Subject"
+                                    },
+                                    "body": {
+                                        "type": "string",
+                                        "example": "This is the email body content"
+                                    },
+                                    "cc": {
+                                        "description": "Comma-separated email addresses",
+                                        "type": "string",
+                                        "example": "cc1@example.com,cc2@example.com"
+                                    },
+                                    "bcc": {
+                                        "description": "Comma-separated email addresses",
+                                        "type": "string",
+                                        "example": "bcc1@example.com,bcc2@example.com"
+                                    },
+                                    "attachments": {
+                                        "description": "Email attachments",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "from_email": {
+                                            "type": "string",
+                                            "example": "sender@example.com"
+                                        },
+                                        "to_email": {
+                                            "type": "string",
+                                            "example": "recipient@example.com"
+                                        },
+                                        "subject": {
+                                            "type": "string",
+                                            "example": "Test Email Subject"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "sent"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "500": {
+                        "description": "Email sending failed"
+                    }
+                }
+            }
+        },
+        "/api/email/logs": {
+            "get": {
+                "tags": [
+                    "Email"
+                ],
+                "summary": "Get email logs",
+                "operationId": "52836a8c96c38f19baa9d6cdd1d4ea88",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "sent",
+                                "failed"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "to_email",
+                        "in": "query",
+                        "description": "Filter by recipient email",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    {
+                        "name": "from_date",
+                        "in": "query",
+                        "description": "Filter by start date",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to_date",
+                        "in": "query",
+                        "description": "Filter by end date",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email logs retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "from_email": {
+                                                "type": "string",
+                                                "example": "sender@example.com"
+                                            },
+                                            "to_email": {
+                                                "type": "string",
+                                                "example": "recipient@example.com"
+                                            },
+                                            "subject": {
+                                                "type": "string",
+                                                "example": "Test Email Subject"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "sent"
+                                            },
+                                            "attempts": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "sent_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "nullable": true
+                                            },
+                                            "error_message": {
+                                                "type": "string",
+                                                "nullable": true
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/logger/log": {
             "post": {
                 "tags": [
@@ -1849,6 +2059,10 @@
         {
             "name": "Authentication",
             "description": "User authentication and session management"
+        },
+        {
+            "name": "Email",
+            "description": "Email sending and management"
         },
         {
             "name": "Logger",
