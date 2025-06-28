@@ -48,45 +48,34 @@ class EmailService
         ]);
 
         try {
-            // Send email using PHPMailer
-            $mail = new PHPMailer(true);
-            $mail->isSMTP();
-            $mail->Host = config('mail.mailers.smtp.host');
-            $mail->SMTPAuth = true;
-            $mail->Username = config('mail.mailers.smtp.username');
-            $mail->Password = config('mail.mailers.smtp.password');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = config('mail.mailers.smtp.port', 587);
+            // Send email using Laravel's Mail facade
+            Mail::send([], [], function ($message) use ($emailData, $cc, $bcc, $attachments) {
+                $message->from($emailData['from'] ?? config('mail.from.address'), config('mail.from.name'))
+                        ->to($emailData['to'])
+                        ->subject($emailData['subject'])
+                        ->html($emailData['body']);
 
-            $mail->setFrom($emailData['from'] ?? config('mail.from.address'), config('mail.from.name'));
-            $mail->addAddress($emailData['to']);
-            $mail->Subject = $emailData['subject'];
-            $mail->isHTML(true);
-            $mail->Body = $emailData['body'];
+                // Add CC
+                if (!empty($cc)) {
+                    $message->cc($cc);
+                }
 
-            // Add CC
-            if (!empty($cc)) {
-                foreach ($cc as $ccEmail) {
-                    $mail->addCC($ccEmail);
+                // Add BCC
+                if (!empty($bcc)) {
+                    $message->bcc($bcc);
                 }
-            }
-            // Add BCC
-            if (!empty($bcc)) {
-                foreach ($bcc as $bccEmail) {
-                    $mail->addBCC($bccEmail);
-                }
-            }
-            // Attach files
-            if (!empty($attachments)) {
-                foreach ($attachments as $fileUrl) {
-                    $relativePath = str_replace(Storage::disk('public')->url(''), '', $fileUrl);
-                    $filePath = Storage::disk('public')->path($relativePath);
-                    if (file_exists($filePath)) {
-                        $mail->addAttachment($filePath);
+
+                // Attach files
+                if (!empty($attachments)) {
+                    foreach ($attachments as $fileUrl) {
+                        $relativePath = str_replace(Storage::disk('public')->url(''), '', $fileUrl);
+                        $filePath = Storage::disk('public')->path($relativePath);
+                        if (file_exists($filePath)) {
+                            $message->attach($filePath);
+                        }
                     }
                 }
-            }
-            $mail->send();
+            });
 
             // Update log with success
             $emailLog->update([
@@ -100,7 +89,7 @@ class EmailService
                 'to' => $emailData['to'],
                 'subject' => $emailData['subject']
             ]);
-        } catch (PHPMailerException $e) {
+        } catch (\Exception $e) {
             // Update log with failure
             $emailLog->update([
                 'status' => 'failed',

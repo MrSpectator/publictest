@@ -21,6 +21,11 @@ use Illuminate\Routing\Controller as BaseController;
  * )
  * 
  * @OA\Server(
+ *     url="http://localhost:8000",
+ *     description="Local Development API"
+ * )
+ * 
+ * @OA\Server(
  *     url="https://backend-v2.isalesbook.com",
  *     description="Production API"
  * )

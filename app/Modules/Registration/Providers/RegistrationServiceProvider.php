@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Modules\Registration\Services\RegistrationService;
 use App\Modules\Email\Services\EmailService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 class RegistrationServiceProvider extends ServiceProvider
 {
@@ -28,8 +29,10 @@ class RegistrationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Load routes
-        $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
+        // Load routes with api prefix and middleware
+        Route::middleware('api')
+            ->prefix('api')
+            ->group(__DIR__ . '/../Routes/api.php');
         
         // Load migrations
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');

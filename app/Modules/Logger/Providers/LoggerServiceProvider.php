@@ -3,6 +3,7 @@
 namespace App\Modules\Logger\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class LoggerServiceProvider extends ServiceProvider
 {
@@ -22,8 +23,10 @@ class LoggerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Load routes
-        $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
+        // Load routes with api prefix and middleware
+        Route::middleware('api')
+            ->prefix('api')
+            ->group(__DIR__ . '/../Routes/api.php');
         
         // Load migrations
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');

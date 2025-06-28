@@ -197,7 +197,9 @@
                 </div>
                 <button type="submit" class="btn-primary">Get Started</button>
                 <div class="or-divider">OR</div>
-                <button type="button" class="btn-google"><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">Sign in with Google</button>
+                <a href="/auth/google" class="btn-google">
+                    <img src="/images/google-logo.png" alt="Google Logo"> Sign in with Google
+                </a>
             </form>
             <div class="signup-link">Don't have an account? <a href="#">Sign up</a></div>
             <div class="support-link">Having trouble signing in? <a href="#">Contact Support</a></div>
