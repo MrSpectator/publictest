@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to iSalesBook - Verify Your Email</title>
+    <title>Welcome to iSalesBook - </title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -246,39 +246,13 @@
                 </div>
             </div>
 
-            <!-- Email Verification Section -->
-            <div class="verification-section">
-                <h3>🔐 Verify Your Email Address</h3>
-                <p>To complete your registration and access your account, please verify your email address by clicking the button below:</p>
-                
-                <a href="{{ $verification_url }}" class="verify-button">
-                    Verify Email Address
-                </a>
-                
-                <div class="expires-notice">
-                    <strong>⏰ Link expires:</strong> {{ $expires_at }}
-                </div>
-            </div>
-
             <!-- Important Information -->
             <div class="info-section">
                 <h4>📋 What's Next?</h4>
                 <ul>
-                    <li><strong>Verify your email</strong> using the link above</li>
                     <li><strong>Log in</strong> using your email and organization code</li>
                     <li><strong>Complete your profile</strong> with additional information</li>
                     <li><strong>Start managing</strong> your sales and customers</li>
-                </ul>
-            </div>
-
-            <!-- Login Instructions -->
-            <div class="info-section">
-                <h4>🔑 How to Log In</h4>
-                <ul>
-                    <li>Go to <a href="{{ url('/login') }}" style="color: #DA612B;">{{ url('/login') }}</a></li>
-                    <li>Enter your email address</li>
-                    <li>Enter your organization code: <strong>{{ $organization->code }}</strong></li>
-                    <li>Enter your password</li>
                 </ul>
             </div>
         </div>
@@ -286,7 +260,7 @@
         <div class="footer">
             <p><strong>iSalesBook</strong> - Your complete sales management solution</p>
             <p>If you didn't create this account, please ignore this email.</p>
-            <p>Need help? Contact us at <a href="mailto:support@isalesbook.com" style="color: #DA612B;">support@isalesbook.com</a></p>
+            <p>Need help? Contact us at <a href="mailto:info@isalesbook.com" style="color: #DA612B;">support@isalesbook.com</a></p>
         </div>
     </div>
 </body>

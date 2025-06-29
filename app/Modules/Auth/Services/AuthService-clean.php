@@ -58,9 +58,7 @@ class AuthService
 
         return [
             'user' => $user->load('organization'),
-            'organization' => $organization,
-            'token' => $user->createToken('auth-token')->plainTextToken,
-            'token_type' => 'Bearer'
+            'organization' => $organization
         ];
     }
 
@@ -69,9 +67,7 @@ class AuthService
      */
     public function logout(User $user): bool
     {
-        // Revoke all tokens for the user
-        $user->tokens()->delete();
-
+        // Simple logout without token management
         Log::info('User logged out', [
             'user_id' => $user->id,
             'email' => $user->email
