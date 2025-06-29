@@ -23,7 +23,7 @@ class AuthService
 
         if (!$organization) {
             throw ValidationException::withMessages([
-                'org_code' => 'Invalid organization code or organization is inactive.'
+                'credentials' => 'Invalid email address, organization code, or password.'
             ]);
         }
 
@@ -35,14 +35,14 @@ class AuthService
 
         if (!$user) {
             throw ValidationException::withMessages([
-                'email' => 'Invalid credentials or user is inactive.'
+                'credentials' => 'Invalid email address, organization code, or password.'
             ]);
         }
 
         // Verify password
         if (!Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
-                'password' => 'Invalid credentials.'
+                'credentials' => 'Invalid email address, organization code, or password.'
             ]);
         }
 

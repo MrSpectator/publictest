@@ -19,9 +19,9 @@ class TestEmail extends Command
         $this->info("Sending test email to: {$testEmail}");
         
         try {
-            Mail::raw('This is a test email from your Laravel application. If you receive this, your email configuration is working correctly!', function ($message) use ($testEmail) {
+            Mail::raw('This is a test email from your isalesbook application. If you receive this, email configuration is working correctly!', function ($message) use ($testEmail) {
                 $message->to($testEmail)
-                        ->subject('Test Email - Laravel Application')
+                        ->subject('Test Email - Isalesbook Application')
                         ->from(config('mail.from.address'), config('mail.from.name'));
             });
             

@@ -162,6 +162,7 @@ return [
         App\Modules\Email\Providers\EmailServiceProvider::class,
         App\Modules\Logger\Providers\LoggerServiceProvider::class,
         App\Modules\Registration\Providers\RegistrationServiceProvider::class,
+        App\Modules\Auth\Providers\AuthServiceProvider::class,
     ],
 
 ];

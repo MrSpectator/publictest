@@ -205,23 +205,26 @@ class RegistrationService
             // Store token in cache for 24 hours
             Cache::put("email_verification_{$token}", $user->id, now()->addHours(24));
 
+            // Render the email template
+            $emailBody = view('emails.verification', [
+                'user' => $user,
+                'verification_url' => url("/verify-email?token={$token}"),
+                'expires_at' => now()->addHours(24)->format('Y-m-d H:i:s'),
+                'organization' => $organization
+            ])->render();
+
             $emailData = [
                 'to' => $user->email,
-                'subject' => 'Verify Your Email Address',
-                'template' => 'emails.verification',
-                'data' => [
-                    'user' => $user,
-                    'verification_url' => url("/api/registration/verify-email?token={$token}"),
-                    'expires_at' => now()->addHours(24)->format('Y-m-d H:i:s'),
-                    'organization' => $organization
-                ]
+                'subject' => 'Welcome to iSalesBook - Verify Your Email',
+                'body' => $emailBody
             ];
 
             $this->emailService->sendEmail($emailData);
             
             Log::info('Verification email sent', [
                 'user_id' => $user->id,
-                'email' => $user->email
+                'email' => $user->email,
+                'organization_code' => $organization->code
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to send verification email', [
@@ -266,7 +269,18 @@ class RegistrationService
             return false;
         }
 
-        $this->sendVerificationEmail($user);
+        // Get the user's organization
+        $organization = $user->organization;
+        
+        if (!$organization) {
+            Log::error('User has no organization for resend verification', [
+                'user_id' => $user->id,
+                'email' => $email
+            ]);
+            return false;
+        }
+
+        $this->sendVerificationEmail($user, $organization);
         
         return true;
     }
@@ -288,15 +302,17 @@ class RegistrationService
             // Store token in cache for 1 hour
             Cache::put("password_reset_{$token}", $user->id, now()->addHour());
 
+            // Render the email template
+            $emailBody = view('emails.password-reset', [
+                'user' => $user,
+                'reset_url' => url("/api/registration/reset-password?token={$token}"),
+                'expires_at' => now()->addHour()->format('Y-m-d H:i:s')
+            ])->render();
+
             $emailData = [
                 'to' => $user->email,
-                'subject' => 'Reset Your Password',
-                'template' => 'emails.password-reset',
-                'data' => [
-                    'user' => $user,
-                    'reset_url' => url("/api/registration/reset-password?token={$token}"),
-                    'expires_at' => now()->addHour()->format('Y-m-d H:i:s')
-                ]
+                'subject' => 'Reset Your iSalesBook Password',
+                'body' => $emailBody
             ];
 
             $this->emailService->sendEmail($emailData);

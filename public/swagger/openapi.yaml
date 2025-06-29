@@ -613,6 +613,8 @@ paths:
   /api/registration/register:
     post:
       summary: Register a new user
+      description: |
+        Register a new user (individual or company). After successful registration, a verification email is sent to the user containing their organization code and verification link. The user must verify their email to activate their account.
       tags: [Registration]
       requestBody:
         required: true
@@ -705,15 +707,23 @@ paths:
                       enum: [2]
       responses:
         '201':
-          description: User registered
+          description: User registered. A verification email is sent to the user with their organization code and verification link.
           content:
             application/json:
               schema:
                 type: object
+                properties:
+                  user:
+                    type: object
+                  message:
+                    type: string
+                    example: "Registration successful. Please check your email for a verification link and your organization code."
 
   /api/registration/verify-email:
     post:
       summary: Verify email with token
+      description: |
+        Verify a user's email address using the token sent in the verification email. The verification email contains the user's organization code and a verification link. Required for account activation.
       tags: [Registration]
       requestBody:
         required: true
@@ -738,6 +748,8 @@ paths:
   /api/registration/resend-verification:
     post:
       summary: Resend verification email
+      description: |
+        Resend the verification email to the user. The email contains the organization code and verification link.
       tags: [Registration]
       requestBody:
         required: true
@@ -761,6 +773,8 @@ paths:
   /api/registration/forgot-password:
     post:
       summary: Send password reset email
+      description: |
+        Send a password reset email to the user. The email is styled and contains a secure reset link.
       tags: [Registration]
       requestBody:
         required: true

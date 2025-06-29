@@ -63,6 +63,18 @@
             margin-bottom: 18px;
             font-size: 1rem;
         }
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 18px;
+            font-size: 0.9rem;
+        }
+        .form-input.error {
+            border-color: #c33;
+        }
         .form-links {
             display: flex;
             justify-content: space-between;
@@ -182,8 +194,17 @@
         <img src="{{ $logo }}" alt="iSalesBook Logo" class="logo">
         <div class="login-form-box">
             <div class="welcome-title">Welcome to iSalesBook <span class="welcome-emoji">👋</span></div>
-            <form id="loginForm" method="POST" action="{{ route('auth.login') }}">
+            <form id="loginForm" method="POST" action="/login">
                 @csrf
+                
+                @if ($errors->any())
+                    <div class="error-message">
+                        @foreach ($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
+                
                 <label class="form-label" for="email">Email</label>
                 <input class="form-input" type="email" id="email" name="email" placeholder="Enter your email" required value="{{ old('email') }}">
                 <label class="form-label" for="org_code">Organizational Code</label>
@@ -193,7 +214,7 @@
                 <div class="form-links">
                     <a href="{{ route('auth.forgot-password') }}">Forgot Password?</a>
                     <span>or</span>
-                    <a href="/api/registration/verify-email">Verify Email</a>
+                    <a href="/verify-email">Verify Email</a>
                 </div>
                 <button type="submit" class="btn-primary">Get Started</button>
                 <div class="or-divider">OR</div>

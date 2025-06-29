@@ -219,10 +219,17 @@ class RegistrationController extends Controller
 
         $sent = $this->registrationService->sendPasswordResetEmail($request->email);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'If the email exists, a password reset link has been sent'
-        ]);
+        if ($sent) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password reset link has been sent to your email'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email not found in our system'
+            ], 404);
+        }
     }
 
     /**
